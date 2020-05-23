@@ -35,6 +35,7 @@ class ProductDto
         $this->category = new CategoryDto($product->getCategory());
     }
 
+
     public function getId()
     {
         return $this->id;

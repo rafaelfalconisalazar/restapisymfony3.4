@@ -32,6 +32,60 @@ class ProductController extends FOSRestController
     }
 
     /**
+     * @param $name
+     * @return array
+     * @Rest\Get("/categoryname/{name}")
+     */
+    public function getProductByCategoryName($name)
+    {
+        $productsDB = $this->getDoctrine()->getRepository(Product::class)->getProductsByCategoryName($name);
+        $products = array();
+        foreach ($productsDB as $productDB) {
+            $product = new ProductDto($productDB);
+            array_push($products, $product);
+        }
+        return $products;
+    }
+    /**
+     * @param $name
+     * @return array
+     * @Rest\Get("/categorynameFrom/{name}")
+     */
+    public function getProductByCategoryNameFrom($name)
+    {
+        $productsDB = $this->getDoctrine()->getRepository(Product::class)->getProductByCategoryNameFrom($name);
+        $products = array();
+        foreach ($productsDB as $productDB) {
+            $product = new ProductDto($productDB);
+            array_push($products, $product);
+        }
+        return $products;
+    }
+
+    /**
+     * @param $name
+     * @return mixed
+     * @Rest\Get("/categorynamesql/{name}")
+     */
+    public function getProductByCategoryNameSql($name)
+    {
+        $sql = "SELECT product.id, product.name, price, category_id 
+                FROM product , category 
+                where category_id= category.id 
+                and category.name='$name'";
+        $em = $this->getDoctrine()->getManager();
+        $stmt = $em->getConnection()->prepare($sql);
+        $stmt->execute();
+        $products = $stmt->fetchAll();
+        $array_num = count($products);
+        for ($i = 0; $i < $array_num; $i++) {
+             $products[$i]["name"]=$products[$i]["name"]." editado";
+        }
+        return $products;
+
+    }
+
+    /**
      * @param $id
      * @return ProductDto|View
      * @Rest\Get("/{id}")

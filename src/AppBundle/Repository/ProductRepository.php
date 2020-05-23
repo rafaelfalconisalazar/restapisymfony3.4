@@ -10,4 +10,28 @@ namespace AppBundle\Repository;
  */
 class ProductRepository extends \Doctrine\ORM\EntityRepository
 {
+    public function getProductsByCategoryName($name)
+    {
+        $query = $this->createQueryBuilder("Product")
+            ->join("Product.category", "Category")
+            ->select("Product")
+            ->where("Category.name = :name")
+            ->setParameter("name", $name);
+        return $query
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getProductByCategoryNameFrom($name)
+    {
+        $query = $this->createQueryBuilder("Product")
+            ->from("AppBundle:Product", "p")
+            ->from("AppBundle:Category", "c")
+            ->where("p.category = c")
+            ->andWhere("c.name = :name")
+            ->setParameter("name", $name);
+        return $query
+            ->getQuery()
+            ->getResult();
+    }
 }
