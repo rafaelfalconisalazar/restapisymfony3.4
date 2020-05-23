@@ -35,6 +35,13 @@ class Product
      */
     private $price;
 
+    /**
+     * @var Category
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Category")
+     * @ORM\JoinColumn(name="category_id", referencedColumnName="id")
+     */
+    private $category;
+
 
     /**
      * Get id
@@ -93,5 +100,23 @@ class Product
     {
         return $this->price;
     }
+
+    /**
+     * @return Category
+     */
+    public function getCategory()
+    {
+        return $this->category;
+    }
+
+    /**
+     * @param Category $category
+     */
+    public function setCategory($category)
+    {
+        $this->category = $category;
+    }
+
+
 }
 

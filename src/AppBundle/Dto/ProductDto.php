@@ -8,25 +8,31 @@ use AppBundle\Entity\Product;
 class ProductDto
 {
     /**
-     *@Type("int")
+     * @Type("int")
      */
     private $id;
 
     /**
-     *@Type("string")
+     * @Type("string")
      */
     private $name;
 
     /**
-     *@Type("double")
+     * @Type("double")
      */
     private $price;
+    /**
+     * @var CategoryDto
+     * @Type ("AppBundle\Dto\CategoryDto")
+     */
+    private $category;
 
     public function __construct(Product $product)
     {
         $this->id = $product->getId();
         $this->name = $product->getName();
         $this->price = $product->getPrice();
+        $this->category = new CategoryDto($product->getCategory());
     }
 
     public function getId()
@@ -61,4 +67,22 @@ class ProductDto
     {
         return $this->price;
     }
+
+    /**
+     * @return CategoryDto
+     */
+    public function getCategory()
+    {
+        return $this->category;
+    }
+
+    /**
+     * @param CategoryDto $category
+     */
+    public function setCategory($category)
+    {
+        $this->category = $category;
+    }
+
+
 }

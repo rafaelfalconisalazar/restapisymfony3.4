@@ -3,6 +3,7 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Dto\ProductDto;
+use AppBundle\Entity\Category;
 use AppBundle\Entity\Product;
 use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -55,16 +56,68 @@ class ProductController extends FOSRestController
 
         try {
             $productDto = $serializar->deserialize($request->getContent(), ProductDto::class, 'json');
+            $productDb = $this->getDoctrine()->getRepository(Product::class)->findOneBy(array("name" => $productDto->getName()));
+            if ($productDb != null) return new View("a product with this name allready exist", Response::HTTP_CONFLICT);
+            $category = $this->getDoctrine()->getRepository(Category::class)->find($productDto->getCategory()->getId());
+            if ($category == null) return new View("a category with this id doesn't exist", Response::HTTP_CONFLICT);
             $product = new Product();
             $product->setName($productDto->getName());
             $product->setPrice($productDto->getPrice());
-            $em=$this->getDoctrine()->getManager();
+            $product->setCategory($category);
+            $em = $this->getDoctrine()->getManager();
             $em->persist($product);
             $em->flush();
             return new View("product create", Response::HTTP_CREATED);
 
         } catch (\Exception $e) {
-            return new View("bad information send",Response::HTTP_BAD_REQUEST);
+            return new View("bad information send", Response::HTTP_BAD_REQUEST);
         }
+    }
+
+    /**
+     * @param Request $request
+     * @param $id
+     * @return View
+     * @Rest\Put("/{id}")
+     */
+    function editProduct(Request $request, $id)
+    {
+        $productDB = $this->getDoctrine()->getRepository(Product::class)->find($id);
+        if ($productDB == null) return new View("product don't find", Response::HTTP_NOT_FOUND);
+        $serializar = SerializerBuilder::create()->build();
+        try {
+            $productDto = $serializar->deserialize($request->getContent(), ProductDto::class, 'json');
+            $productDb = $this->getDoctrine()->getRepository(Product::class)->findOneBy(array("name" => $productDto->getName()));
+            if ($productDb != null) {
+                if ($id != $productDb->getId()) return new View("a product with this name allready exist", Response::HTTP_CONFLICT);
+            }
+            $category = $this->getDoctrine()->getRepository(Category::class)->find($productDto->getCategory()->getId());
+            if ($category == null) return new View("a category with this id doesn't exist", Response::HTTP_CONFLICT);
+            $productDB->setName($productDto->getName());
+            $productDB->setPrice($productDto->getPrice());
+            $productDB->setCategory($category);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($productDB);
+            $em->flush();
+            return new View("product edited", Response::HTTP_ACCEPTED);
+
+        } catch (\Exception $e) {
+            return new View("bad information send", Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * @param $id
+     * @return View
+     * @Rest\Delete("/{id}")
+     */
+    public function deleteProduct($id)
+    {
+        $productDB = $this->getDoctrine()->getRepository(Product::class)->find($id);
+        if ($productDB == null) return new View("product don't find", Response::HTTP_NOT_FOUND);
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($productDB);
+        $em->flush();
+        return new View("product deleted", Response::HTTP_ACCEPTED);
     }
 }
